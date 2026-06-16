@@ -1,0 +1,18 @@
+{
+  "name": "woocommerce-google-sheet-price-exporter",
+  "version": "1.0.0",
+  "description": "Scheduled WooCommerce product price export to Google Sheets — emergency price checking backup for staff",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "export": "node src/exportPrices.js",
+    "dev": "node src/exportPrices.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "googleapis": "^144.0.0"
+  }
+}

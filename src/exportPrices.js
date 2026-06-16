@@ -1,5 +1,5 @@
 import { config } from './config.js';
-import { fetchProducts, fetchVariations } from './woocommerce.js';
+import { fetchProducts, fetchAllVariations } from './woocommerce.js';
 import { normalizeProducts, detectDuplicateSkus } from './normalizeProduct.js';
 import {
   clearPricesTab,
@@ -25,18 +25,15 @@ async function main() {
     const products = await fetchProducts();
     productCount = products.length;
 
-    const variationsByParent = new Map();
     const variableProducts = products.filter((p) => p.type === 'variable');
 
+    const variationsByParent = new Map();
     if (variableProducts.length > 0) {
       console.log(`Fetching variations for ${variableProducts.length} variable products...`);
-      for (const product of variableProducts) {
-        const variations = await fetchVariations(product.id);
-        if (variations.length > 0) {
-          variationsByParent.set(product.id, variations);
-          variationCount += variations.length;
-        }
-        console.log(`  Product ${product.id}: ${variations.length} variations`);
+      const results = await fetchAllVariations(variableProducts.map((p) => p.id));
+      for (const [id, variations] of results) {
+        variationsByParent.set(id, variations);
+        variationCount += variations.length;
       }
     }
 

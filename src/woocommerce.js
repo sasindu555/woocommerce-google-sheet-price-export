@@ -7,22 +7,33 @@ function authHeader() {
   return `Basic ${Buffer.from(credentials).toString('base64')}`;
 }
 
-async function fetchWithTimeout(url, options = {}) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+async function fetchWithRetry(url, options = {}, retries = 2) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
-  try {
-    const response = await fetch(url, { ...options, signal: controller.signal });
-    return response;
-  } finally {
-    clearTimeout(timer);
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      return response;
+    } catch (err) {
+      clearTimeout(timer);
+
+      if (attempt < retries) {
+        const delay = Math.pow(2, attempt) * 1000;
+        console.warn(`  Retry ${attempt + 1}/${retries} after ${delay}ms: ${err.message}`);
+        await new Promise((r) => setTimeout(r, delay));
+        continue;
+      }
+
+      throw err;
+    }
   }
 }
 
 async function fetchPage(endpoint, page, perPage) {
   const url = `${config.wc.baseUrl}/wp-json/wc/v3/${endpoint}?page=${page}&per_page=${perPage}`;
 
-  const response = await fetchWithTimeout(url, {
+  const response = await fetchWithRetry(url, {
     headers: { Authorization: authHeader() },
   });
 

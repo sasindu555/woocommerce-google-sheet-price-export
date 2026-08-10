@@ -64,3 +64,7 @@ See `.github/workflows/export-prices.yml`. Set repository secrets:
 - WooCommerce API keys: **read-only** only.
 - Never commit `.env` or `google-service-account.json`.
 - Store secrets in GitHub Secrets if using Actions.
+
+## Keep Repo Updates
+
+- 2026/08/10
